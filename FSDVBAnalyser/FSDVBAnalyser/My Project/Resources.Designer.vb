@@ -62,7 +62,7 @@ Namespace My.Resources
         End Property
         
         '''<summary>
-        '''  Looks up a localized string similar to Type names should be all uppercase..
+        '''  Looks up a localized string similar to .
         '''</summary>
         Friend ReadOnly Property AnalyzerDescription() As String
             Get
@@ -71,7 +71,7 @@ Namespace My.Resources
         End Property
         
         '''<summary>
-        '''  Looks up a localized string similar to Type name &apos;{0}&apos; contains lowercase letters.
+        '''  Looks up a localized string similar to {0}.
         '''</summary>
         Friend ReadOnly Property AnalyzerMessageFormat() As String
             Get
@@ -80,7 +80,7 @@ Namespace My.Resources
         End Property
         
         '''<summary>
-        '''  Looks up a localized string similar to Type name contains lowercase letters.
+        '''  Looks up a localized string similar to Format String Analyser.
         '''</summary>
         Friend ReadOnly Property AnalyzerTitle() As String
             Get

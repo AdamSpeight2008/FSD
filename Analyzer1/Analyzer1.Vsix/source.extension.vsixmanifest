@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="FSD_VB_Analyser.Vsix..d0a1ba46-0296-4b7e-8d62-01a64c31613c" Version="1.0.2" Language="en-US" Publisher="Adam"/>
-    <DisplayName>FSDVBAnalyser</DisplayName>
+    <Identity Id="Analyzer1.Vsix..0fd364a3-250d-4fed-b283-bb62a6e6fab7" Version="1.0" Language="en-US" Publisher="Adam"/>
+    <DisplayName>Analyzer1.Vsix</DisplayName>
     <Description xml:space="preserve">This is a sample diagnostic extension for the .NET Compiler Platform ("Roslyn").</Description>
   </Metadata>
   <Installation>
@@ -15,7 +15,7 @@
     <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5.2,)" />
   </Dependencies>
   <Assets>
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="FSDVBAnalyser" Path="|FSDVBAnalyser|" />
-    <Asset Type="Microsoft.VisualStudio.Analyzer" d:Source="Project" d:ProjectName="FSDVBAnalyser" Path="|FSDVBAnalyser|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="Analyzer1" Path="|Analyzer1|"/>
+    <Asset Type="Microsoft.VisualStudio.Analyzer" d:Source="Project" d:ProjectName="Analyzer1" Path="|Analyzer1|"/>
   </Assets>
 </PackageManifest>
