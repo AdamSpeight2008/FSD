@@ -57,8 +57,15 @@ Public Class FSD_VB_AnalyserAnalyzer
 
                 Dim ArgObjs = Args.GetArgumentAsObjects(context.SemanticModel, context.CancellationToken).ToArray
                 Dim fo = Args.Arguments(0)
-                Dim fs = fo.GetText.ToString
+                Dim fs0 = fo.GetText().ToString
+                Dim fs = fs0.Substring(1, fs0.Length - 2)
                 Dim res = _FSA.Parse(fs)
+                For Each e In FSD.SimpleIssues(res)
+                    Dim d = Diagnostic.Create("FSD0", "", e.ToString, DiagnosticSeverity.Error, DiagnosticSeverity.Error, True, 0,
+                                              location:=Location.Create(fo.SyntaxTree, TextSpan.FromBounds(fo.SpanStart + e.bx + 1, fo.SpanStart + e.ex + 1)))
+
+                    context.ReportDiagnostic(d)
+                Next
                 FSD.Module1.ComplexIssues(context, fo, res, Args, ArgObjs)
                 '                Dim d = Diagnostic.Create(Rule, x.GetLocation)
                 '               context.ReportDiagnostic(d)

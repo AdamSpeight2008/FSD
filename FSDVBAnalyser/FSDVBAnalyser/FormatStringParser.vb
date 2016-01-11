@@ -27,7 +27,7 @@ Namespace Global.FSD
                         If n.HasValue Then
                             ' Possibly
                             If n.Value = "{" Then
-                                x = Add_EOB(fs, content, x) ' Escaped Opening Brace
+                                x = Add_EscapedOpeningBrace(fs, content, x) ' Escaped Opening Brace
                             Else
                                 x = content.AddLast(Parse_ArgHole(fs, x)).Value.ex
                             End If
@@ -36,7 +36,7 @@ Namespace Global.FSD
                             ' Error as it can't be either ;=
                             ' a) Escaped
                             ' b) Start of an Arg Hole
-                            x = Add_UOB(fs, content, x)
+                            x = Add_UnexpectedOpeningBrace(fs, content, x)
                         End If
 
                     Case "}"c
@@ -44,9 +44,9 @@ Namespace Global.FSD
                         ' Is it an escaped closing brace?
                         n = NextChar(fs, x)
                         If n.HasValue AndAlso (n.Value = "}"c) Then
-                            x = Add_ECB(fs, content, x) ' Escape Closing Brace
+                            x = Add_EscapedClosingBrace(fs, content, x) ' Escape Closing Brace
                         Else
-                            x = Add_UCB(fs, content, x)
+                            x = Add_UnexpectedClosingBrace(fs, content, x)
                         End If
                     Case Else
                         ' Treat as normal text
@@ -64,35 +64,35 @@ Namespace Global.FSD
             End If
         End Sub
 
-        Private Function Add_EOT(fs As String, ByRef content As LinkedList(Of Span), x As Integer) As Integer
+        Private Function Add_UnexpectedEndOfText(fs As String, ByRef content As LinkedList(Of Span), x As Integer) As Integer
             Return content.AddLast(New Span(fs, SpanKind.Unexpected_EOT, x, x)).Value.ex
         End Function
 
-        Private Function Add_CB(fs As String, ByRef content As LinkedList(Of Span), x As Integer) As Integer
+        Private Function Add_ClosingBrace(fs As String, ByRef content As LinkedList(Of Span), x As Integer) As Integer
             Return content.AddLast(New Span(fs, SpanKind.Closing_Brace, x, x + 1)).Value.ex
         End Function
 
-        Private Function Add_OB(fs As String, ByRef content As LinkedList(Of Span), x As Integer) As Integer
+        Private Function Add_OpeningBrace(fs As String, ByRef content As LinkedList(Of Span), x As Integer) As Integer
             Return content.AddLast(New Span(fs, SpanKind.Opening_Brace, x, x + 1)).Value.ex
         End Function
 
-        Private Function Add_UC(fs As String, ByRef content As LinkedList(Of Span), x As Integer) As Integer
+        Private Function Add_UnexpectedChar(fs As String, ByRef content As LinkedList(Of Span), x As Integer) As Integer
             Return content.AddLast(New Span(fs, SpanKind.Error_Unexpected_Char, x, x + 1)).Value.ex
         End Function
 
-        Private Function Add_UCB(fs As String, ByRef content As LinkedList(Of Span), x As Integer) As Integer
+        Private Function Add_UnexpectedClosingBrace(fs As String, ByRef content As LinkedList(Of Span), x As Integer) As Integer
             Return content.AddLast(New Span(fs, SpanKind.Error_Unexpected_Closing_Brace, x, x + 1)).Value.ex
         End Function
 
-        Private Function Add_UOB(fs As String, ByRef content As LinkedList(Of Span), x As Integer) As Integer
+        Private Function Add_UnexpectedOpeningBrace(fs As String, ByRef content As LinkedList(Of Span), x As Integer) As Integer
             Return content.AddLast(New Span(fs, SpanKind.Error_Unexpected_Opening_Brace, x, x + 1)).Value.ex
         End Function
 
-        Private Function Add_ECB(fs As String, ByRef content As LinkedList(Of Span), x As Integer) As Integer
+        Private Function Add_EscapedClosingBrace(fs As String, ByRef content As LinkedList(Of Span), x As Integer) As Integer
             Return content.AddLast(New Span(fs, SpanKind.Escaped_Closing_Brace, x, x + 2)).Value.ex
         End Function
 
-        Private Function Add_EOB(fs As String, ByRef content As LinkedList(Of Span), x As Integer) As Integer
+        Private Function Add_EscapedOpeningBrace(fs As String, ByRef content As LinkedList(Of Span), x As Integer) As Integer
             Return content.AddLast(New Span(fs, SpanKind.Escaped_Opening_Brace, x, x + 2)).Value.ex
         End Function
 
@@ -102,61 +102,59 @@ Namespace Global.FSD
             x = contents.AddLast(Parse_Whitespace(fs, x)).Value.ex
             x = contents.AddLast(Parse_Arg_Index(fs, x)).Value.ex
             x = contents.AddLast(Parse_Whitespace(fs, x)).Value.ex
-            If x >= fs.Length Then Return New Span(fs, SpanKind.Error_Arg_Hole, bx, Add_EOT(fs, contents, x), contents)
+            If x >= fs.Length Then Return New Span(fs, SpanKind.Error_Arg_Hole, bx, Add_UnexpectedEndOfText(fs, contents, x), contents)
             Dim ch = fs(x)
             ' Is it the Alignment seperator glyph?
             If ch = "," Then
                 x = contents.AddLast(Parse_Arg_Align(fs, x)).Value.ex
-                If x >= fs.Length Then Return New Span(fs, SpanKind.Error_Arg_Hole, bx, Add_EOT(fs, contents, x), contents)
+                If x >= fs.Length Then Return New Span(fs, SpanKind.Error_Arg_Hole, bx, Add_UnexpectedEndOfText(fs, contents, x), contents)
                 ch = fs(x)
             End If
             ' Is it the format seperator glyph?
             If ch = ":" Then
                 x = contents.AddLast(Parse_Arg_Format(fs, x)).Value.ex
-                If x >= fs.Length Then Return New Span(fs, SpanKind.Error_Arg_Hole, bx, Add_EOT(fs, contents, x), contents)
+                If x >= fs.Length Then Return New Span(fs, SpanKind.Error_Arg_Hole, bx, Add_UnexpectedEndOfText(fs, contents, x), contents)
                 ch = fs(x)
             End If
             ' Is it the opening brace glyph?
             If ch = "{" Then
                 Dim nc = NextChar(fs, x)
                 If nc.HasValue Then
-                    If nc.Value = "{"c Then Return New Span(fs, SpanKind.Error_Arg_Hole, bx, Add_EOB(fs, contents, x), contents)
-                    Return New Span(fs, SpanKind.Error_Arg_Hole, bx, Add_UC(fs, contents, x), contents)
+                    If nc.Value = "{"c Then Return New Span(fs, SpanKind.Error_Arg_Hole, bx, Add_EscapedOpeningBrace(fs, contents, x), contents)
+                    Return New Span(fs, SpanKind.Error_Arg_Hole, bx, Add_UnexpectedChar(fs, contents, x), contents)
                 Else
-                    Return New Span(fs, SpanKind.Error_Arg_Hole, bx, Add_EOT(fs, contents, x), contents)
+                    Return New Span(fs, SpanKind.Error_Arg_Hole, bx, Add_UnexpectedEndOfText(fs, contents, x), contents)
                 End If
-            End If
-            ' Is it the closing brace glyph?
-            If ch = "}" Then
+            ElseIf ch = "}" Then
                 Dim nc = NextChar(fs, x)
-                If nc.HasValue AndAlso nc.Value = "}"c Then Return New Span(fs, SpanKind.Error_Arg_Hole, bx, Add_ECB(fs, contents, x), contents)
-                Return New Span(fs, SpanKind.Arg_Hole, bx, Add_CB(fs, contents, x), contents)
+                If nc.HasValue AndAlso nc.Value = "}"c Then Return New Span(fs, SpanKind.Error_Arg_Hole, bx, Add_EscapedClosingBrace(fs, contents, x), contents)
+                Return New Span(fs, SpanKind.Arg_Hole, bx, Add_ClosingBrace(fs, contents, x), contents)
+            Else
+                Return New Span(fs, SpanKind.Error_Arg_Hole, bx, Add_UnexpectedChar(fs, contents, x), contents)
             End If
-            Return New Span(fs, SpanKind.Error_Arg_Hole, bx, Add_UC(fs, contents, x), contents)
         End Function
 
         Private Function Parse_Arg_Format(fs As String, x As Integer) As Span
             Dim bx = x, contents As New LinkedList(Of Span), ch As Char, tx As Int32? = Nothing
             x = contents.AddLast(New Span(fs, SpanKind.Colon, bx, x + 1)).Value.ex
             While True
-                If x >= fs.Length Then Return New Span(fs, SpanKind.Error_Arg_Format, bx, Add_EOT(fs, contents, x), contents) ' Unexpected EOT
+                If x >= fs.Length Then Return New Span(fs, SpanKind.Error_Arg_Format, bx, Add_UnexpectedEndOfText(fs, contents, x), contents) ' Unexpected EOT
                 ch = fs(x)
                 Select Case ch
                     Case "}"c
                         AddText(fs, contents, tx, x)
                         Dim nc = NextChar(fs, x)
-                        If nc.HasValue = False Then Return New Span(fs, SpanKind.Arg_Format, bx, x, contents)
-                        If nc.Value <> "}"c Then Return New Span(fs, SpanKind.Arg_Format, bx, x, contents)
-                        x = Add_ECB(fs, contents, x) ' Escaped Closing Brace
+                        If nc.HasValue = False OrElse nc.Value <> "}"c Then Return New Span(fs, SpanKind.Arg_Format, bx, x, contents)
+                        x = Add_EscapedClosingBrace(fs, contents, x) ' Escaped Closing Brace
                     Case "{"c
                         AddText(fs, contents, tx, x)
                         Dim nc = NextChar(fs, x)
-                        If nc.HasValue = False Then Return New Span(fs, SpanKind.Error_Arg_Format, bx, Add_EOT(fs, contents, x), contents)
+                        If nc.HasValue = False Then Return New Span(fs, SpanKind.Error_Arg_Format, bx, Add_UnexpectedEndOfText(fs, contents, x), contents)
                         If nc.Value = "{"c Then
                             ' Escaped Opening Brace
-                            x = Add_EOB(fs, contents, x)
+                            x = Add_EscapedOpeningBrace(fs, contents, x)
                         Else
-                            x = Add_UOB(fs, contents, x)
+                            x = Add_UnexpectedOpeningBrace(fs, contents, x)
                         End If
                     Case Else
                         If tx.HasValue = False Then tx = New Int32?(x)
@@ -172,7 +170,7 @@ Namespace Global.FSD
         Private Function Parse_Arg_Align(fs As String, x As Integer) As Span
             Dim bx = x, contents As New LinkedList(Of Span)
             x = contents.AddLast(New Span(fs, SpanKind.Comma, x, x + 1)).Value.ex
-            If x > fs.Length Then Return New Span(fs, SpanKind.Error_Arg_Align, bx, Add_EOT(fs, contents, x), contents)  ' Unexpect EOT
+            If x >= fs.Length Then Return New Span(fs, SpanKind.Error_Arg_Align, bx, Add_UnexpectedEndOfText(fs, contents, x), contents)  ' Unexpect EOT
             Dim ws = Parse_Whitespace(fs, x)
             x = contents.AddLast(ws).Value.ex
             Dim ch = fs(x)
@@ -462,7 +460,7 @@ Namespace Global.FSD
         End Sub
         Private Sub Report(context As SyntaxNodeAnalysisContext, fsobj As ArgumentSyntax, s As Span, v As String)
             context.ReportDiagnostic(Diagnostic.Create(FSDVBAnalyser.FSD_VB_AnalyserAnalyzer.Rule1,
-                                     Location.Create(fsobj.SyntaxTree, TextSpan.FromBounds(fsobj.SpanStart + s.bx, fsobj.SpanStart + s.ex)), v))
+                                     Location.Create(fsobj.SyntaxTree, TextSpan.FromBounds(fsobj.SpanStart + s.bx + 1, fsobj.SpanStart + s.ex + 1)), v))
         End Sub
 
         Sub Analyse_ArgHole_Index(
